@@ -1,0 +1,47 @@
+= Yupiik Maven Shade Transformers
+
+Extensions to use with Apache Maven Shade.
+
+== Relocating Wrapper
+
+This transformer aims at wrapping another transformer adding relocation capabilities to it (using relocations of the plugin).
+It supports a list of delegate transformers if needed.
+
+=== Usage
+
+[source,xml]
+----
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.RelocationTransformer">
+                  <delegates>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.properties.PropertiesTransformer">
+                      <resource>configuration/application.properties</resource>
+                      <ordinalKey>ordinal</ordinalKey>
+                    </transformer>
+                  </delegates>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
+----
+
