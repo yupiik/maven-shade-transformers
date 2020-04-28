@@ -26,7 +26,7 @@ It supports a list of delegate transformers if needed.
             </goals>
             <configuration>
               <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.RelocationTransformer">
+                <transformer implementation="io.yupiik.maven.shade.transformer.RelocationTransformer">
                   <delegates>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.properties.PropertiesTransformer">
                       <resource>configuration/application.properties</resource>
@@ -38,6 +38,13 @@ It supports a list of delegate transformers if needed.
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>io.yupiik.maven</groupId>
+            <artifactId>maven-shade-transformers</artifactId>
+            <version>0.0.1</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
