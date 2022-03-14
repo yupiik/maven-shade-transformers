@@ -72,3 +72,12 @@ This provides two transformer implementations which use slightly different repla
 </project>
 ----
 
+== Build
+
+To build the project use:
+
+[source,bash]
+----
+mvn clean verify -Prun-its
+----
+
