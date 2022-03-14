@@ -21,23 +21,25 @@ File jar = new File(basedir, "target/appending-1.0.jar")
 assert jar.isFile()
 
 JarFile jarFile = new JarFile( jar );
+try {
 
-JarEntry jarEntry = jarFile.getEntry( "foo/bar.txt" );
-if ( jarEntry == null ) {
-  throw new IllegalStateException( "wanted path is missing: foo/bar.txt");
-}
+  JarEntry jarEntry = jarFile.getEntry("foo/bar.txt");
+  if (jarEntry == null) {
+    throw new IllegalStateException("wanted path is missing: foo/bar.txt");
+  }
 
-String content1 = IOUtil.toString( jarFile.getInputStream( jarEntry ), "UTF-8" );
+  String content1 = IOUtil.toString(jarFile.getInputStream(jarEntry), "UTF-8");
 
-jarEntry = jarFile.getEntry( "foo/prefix.txt" );
-if ( jarEntry == null ) {
-  throw new IllegalStateException( "wanted path is missing: foo/prefix.txt");
-}
+  jarEntry = jarFile.getEntry("foo/prefix.txt");
+  if (jarEntry == null) {
+    throw new IllegalStateException("wanted path is missing: foo/prefix.txt");
+  }
 
-String content2 = IOUtil.toString( jarFile.getInputStream( jarEntry ), "UTF-8" );
-jarFile.close();
-
-// Simple replacement
-assert content1.contains('a=jakarta.foo.bar')
+  String content2 = IOUtil.toString(jarFile.getInputStream(jarEntry), "UTF-8");
+  // Simple replacement
+  assert content1.contains('a=jakarta.foo.bar')
 // Replacement with prefix
-assert content2.contains('a=mypackage.shaded.com.foo.bar')
+  assert content2.contains('a=mypackage.shaded.com.foo.bar')
+} finally {
+  jarFile.close();
+}
