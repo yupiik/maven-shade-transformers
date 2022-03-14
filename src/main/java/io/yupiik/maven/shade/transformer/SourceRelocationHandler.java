@@ -15,16 +15,12 @@
  */
 package io.yupiik.maven.shade.transformer;
 
-import org.apache.maven.plugins.shade.relocation.Relocator;
-import org.apache.maven.plugins.shade.resource.ResourceTransformer;
-
 import java.util.List;
+import org.apache.maven.plugins.shade.relocation.Relocator;
 
-/**
- * Abstract class providing the needed logic to relocate any content.
- */
-public abstract class BaseRelocatingTransformer implements ResourceTransformer {
-    protected String relocate(final String originalValue, final List<Relocator> relocators) {
+public class SourceRelocationHandler implements RelocationHandler{
+    @Override
+    public String relocate(String originalValue, List<Relocator> relocators) {
         String newValue = originalValue;
         for (Relocator relocator : relocators) {
             newValue = relocator.applyToSourceContent(newValue);

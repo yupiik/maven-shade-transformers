@@ -30,9 +30,18 @@ import java.util.jar.JarOutputStream;
 /**
  * Trivial transformer applying relocators on resources content.
  */
-public class RelocationTransformer extends BaseRelocatingTransformer {
+public class RelocationTransformer implements ResourceTransformer {
+    private RelocationHandler handler;
     private Collection<ResourceTransformer> delegates;
     private boolean transformed;
+
+    public RelocationTransformer() {
+        this(new ClassRelocationHandler());
+    }
+
+    protected RelocationTransformer(RelocationHandler handler) {
+        this.handler = handler;
+    }
 
     @Override
     public boolean canTransformResource(String resource) {
@@ -54,7 +63,7 @@ public class RelocationTransformer extends BaseRelocatingTransformer {
             if (transformer.canTransformResource(resource)) {
                 transformed = true;
                 if (relocated == null) {
-                    relocated = relocate(IOUtil.toString(is), relocators)
+                    relocated = handler.relocate(IOUtil.toString(is), relocators)
                             .getBytes(StandardCharsets.UTF_8);
                 }
                 transformer.processResource(

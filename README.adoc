@@ -25,6 +25,10 @@ It supports a list of delegate transformers if needed.
 
 === Usage
 
+This provides two transformer implementations which use slightly different replacement algorithms.
+* `io.yupiik.maven.shade.transformer.RelocationTransformer`: relocates class names
+* `io.yupiik.maven.shade.transformer.SourceRelocationTransformer`: relocates class names in source-like files
+
 [source,xml]
 ----
 <project>

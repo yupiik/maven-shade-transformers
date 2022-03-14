@@ -43,14 +43,14 @@
             </goals>
             <configuration>
               <transformers>
-                <transformer implementation="io.yupiik.maven.shade.transformer.RelocationTransformer">
+                <transformer implementation="io.yupiik.maven.shade.transformer.SourceRelocationTransformer">
                   <delegates>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                       <resource>foo/bar.txt</resource>
                     </transformer>
                   </delegates>
                 </transformer>
-                <transformer implementation="io.yupiik.maven.shade.transformer.RelocationTransformer">
+                <transformer implementation="io.yupiik.maven.shade.transformer.SourceRelocationTransformer">
                   <delegates>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                       <resource>foo/prefix.txt</resource>
