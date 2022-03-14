@@ -27,12 +27,7 @@ public abstract class BaseRelocatingTransformer implements ResourceTransformer {
     protected String relocate(final String originalValue, final List<Relocator> relocators) {
         String newValue = originalValue;
         for (Relocator relocator : relocators) {
-            String value;
-            do {
-                value = newValue;
-                newValue = relocator.relocateClass(value);
-            }
-            while (!value.equals(newValue));
+            newValue = relocator.applyToSourceContent(newValue);
         }
         return newValue;
     }
