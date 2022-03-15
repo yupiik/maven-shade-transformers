@@ -15,11 +15,20 @@
  */
 package io.yupiik.maven.shade.transformer;
 
+import org.apache.maven.plugins.shade.relocation.Relocator;
+
+import java.util.List;
+
 /**
  * Trivial transformer applying relocators on sources-like content.
  */
 public class SourceRelocationTransformer extends RelocationTransformer {
-    public SourceRelocationTransformer() {
-        super(new SourceRelocationHandler());
+    @Override
+    public String relocate(final String originalValue, final List<Relocator> relocators) {
+        String newValue = originalValue;
+        for (Relocator relocator : relocators) {
+            newValue = relocator.applyToSourceContent(newValue);
+        }
+        return newValue;
     }
 }

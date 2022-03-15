@@ -16,6 +16,7 @@
 package io.yupiik.maven.shade.transformer;
 
 import org.apache.maven.plugins.shade.relocation.Relocator;
+import org.apache.maven.plugins.shade.resource.ReproducibleResourceTransformer;
 import org.apache.maven.plugins.shade.resource.ResourceTransformer;
 import org.codehaus.plexus.util.IOUtil;
 
@@ -30,18 +31,9 @@ import java.util.jar.JarOutputStream;
 /**
  * Trivial transformer applying relocators on resources content.
  */
-public class RelocationTransformer implements ResourceTransformer {
-    private RelocationHandler handler;
+public class RelocationTransformer implements ReproducibleResourceTransformer {
     private Collection<ResourceTransformer> delegates;
     private boolean transformed;
-
-    public RelocationTransformer() {
-        this(new ClassRelocationHandler());
-    }
-
-    protected RelocationTransformer(RelocationHandler handler) {
-        this.handler = handler;
-    }
 
     @Override
     public boolean canTransformResource(String resource) {
@@ -58,20 +50,46 @@ public class RelocationTransformer implements ResourceTransformer {
 
     @Override
     public void processResource(final String resource, final InputStream is, final List<Relocator> relocators) throws IOException {
+        processResource(resource, is, relocators, 0);
+    }
+
+    @Override
+    public void processResource(final String resource, final InputStream is,
+                                final List<Relocator> relocators, final long time) throws IOException {
         byte[] relocated = null;
         for (final ResourceTransformer transformer : delegates) {
             if (transformer.canTransformResource(resource)) {
                 transformed = true;
                 if (relocated == null) {
-                    relocated = handler.relocate(IOUtil.toString(is), relocators)
+                    relocated = relocate(IOUtil.toString(is), relocators)
                             .getBytes(StandardCharsets.UTF_8);
                 }
-                transformer.processResource(
-                        resource,
-                        new ByteArrayInputStream(relocated),
-                        relocators);
+                if (ReproducibleResourceTransformer.class.isInstance(transformer)) {
+                    ReproducibleResourceTransformer.class.cast(transformer).processResource(
+                            resource,
+                            new ByteArrayInputStream(relocated),
+                            relocators, time);
+                } else {
+                    transformer.processResource(
+                            resource,
+                            new ByteArrayInputStream(relocated),
+                            relocators);
+                }
             }
         }
+    }
+
+    protected String relocate(final String string, final List<Relocator> relocators) {
+        String newValue = string;
+        for (Relocator relocator : relocators) {
+            String value;
+            do {
+                value = newValue;
+                newValue = relocator.relocateClass(value);
+            }
+            while (!value.equals(newValue));
+        }
+        return newValue;
     }
 
     @Override

@@ -28,6 +28,7 @@ It supports a list of delegate transformers if needed.
 This provides two transformer implementations which use slightly different replacement algorithms.
 * `io.yupiik.maven.shade.transformer.RelocationTransformer`: relocates class names
 * `io.yupiik.maven.shade.transformer.SourceRelocationTransformer`: relocates class names in source-like files
+* `io.yupiik.maven.shade.transformer.PathRelocationTransformer`: relocates paths (enabling to use `rawString` relocation configuration and use a plain `replaceAll`)
 
 [source,xml]
 ----

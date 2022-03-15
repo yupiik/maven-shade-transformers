@@ -15,15 +15,19 @@
  */
 package io.yupiik.maven.shade.transformer;
 
-import java.util.List;
 import org.apache.maven.plugins.shade.relocation.Relocator;
 
-public class SourceRelocationHandler implements RelocationHandler{
+import java.util.List;
+
+/**
+ * Trivial transformer applying relocators using relocate path.
+ */
+public class PathRelocationTransformer extends RelocationTransformer {
     @Override
-    public String relocate(String originalValue, List<Relocator> relocators) {
-        String newValue = originalValue;
+    protected String relocate(final String string, final List<Relocator> relocators) {
+        String newValue = string;
         for (Relocator relocator : relocators) {
-            newValue = relocator.applyToSourceContent(newValue);
+            newValue = relocator.relocatePath(newValue);
         }
         return newValue;
     }

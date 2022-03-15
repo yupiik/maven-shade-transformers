@@ -17,11 +17,14 @@ package io.yupiik.maven.shade.transformer;
 
 import org.apache.maven.plugins.shade.relocation.SimpleRelocator;
 import org.apache.maven.plugins.shade.resource.AppendingTransformer;
+import org.apache.maven.plugins.shade.resource.ResourceTransformer;
+import org.apache.maven.plugins.shade.resource.XmlAppendingTransformer;
 import org.codehaus.plexus.util.IOUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.jar.JarEntry;
@@ -36,30 +39,86 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RelocationTransformerTest {
     @Test
+    void relocateUri() throws Exception {
+        final XmlAppendingTransformer delegate = new XmlAppendingTransformer();
+        final Field resource = XmlAppendingTransformer.class.getDeclaredField("resource");
+        resource.setAccessible(true);
+        resource.set(delegate, "META-INF/faces-config.xml");
+
+        final RelocationTransformer resourceTransformer = createTransformer(delegate, true);
+        resourceTransformer.processResource(
+                "META-INF/faces-config.xml",
+                new ByteArrayInputStream(("" +
+                        "<faces-config" +
+                        " xmlns=\"http://java.sun.com/xml/ns/javaee\"" +
+                        " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"2.0\"" +
+                        " xsi:schemaLocation=\"" +
+                        "http://java.sun.com/xml/ns/javaee " +
+                        "http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd\" />")
+                        .getBytes(StandardCharsets.UTF_8)),
+                singletonList(new SimpleRelocator(
+                        "http://java.sun.com/xml/ns/javaee",
+                        "https://jakarta.ee/xml/ns/jakartaee",
+                        null, null, true)));
+        assertOutput(resourceTransformer, jarInputStream -> {
+            final JarEntry entry = jarInputStream.getNextJarEntry();
+            assertNotNull(entry);
+            assertEquals("META-INF/faces-config.xml", entry.getName());
+            assertEquals("" +
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<faces-config" +
+                    " xmlns=\"https://jakarta.ee/xml/ns/jakartaee\"" +
+                    " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                    " version=\"2.0\"" +
+                    " xsi:schemaLocation=\"" +
+                    "https://jakarta.ee/xml/ns/jakartaee " +
+                    "https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_2_0.xsd\" />",
+                    IOUtil.toString(jarInputStream).replace("\r\n", "\n").trim());
+            assertNull(jarInputStream.getNextJarEntry());
+        });
+    }
+
+    @Test
     void relocate() throws Exception {
         final AppendingTransformer delegate = new AppendingTransformer();
         final Field resource = AppendingTransformer.class.getDeclaredField("resource");
         resource.setAccessible(true);
         resource.set(delegate, "foo/bar.txt");
 
-        final RelocationTransformer resourceTransformer = new RelocationTransformer();
-        resourceTransformer.setDelegates(singletonList(delegate));
+        final RelocationTransformer resourceTransformer = createTransformer(delegate, false);
 
         assertTrue(resourceTransformer.canTransformResource("foo/bar.txt"));
         resourceTransformer.processResource(
                 "foo/bar.txt",
                 new ByteArrayInputStream("a=javax.foo.bar".getBytes(StandardCharsets.UTF_8)),
                 singletonList(new SimpleRelocator("javax", "jakarta", null, null)));
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try (final JarOutputStream jarOutputStream = new JarOutputStream(out)) {
-            resourceTransformer.modifyOutputStream(jarOutputStream);
-        }
-        try (final JarInputStream jarInputStream = new JarInputStream(new ByteArrayInputStream(out.toByteArray()))) {
+        assertOutput(resourceTransformer, jarInputStream -> {
             final JarEntry entry = jarInputStream.getNextJarEntry();
             assertNotNull(entry);
             assertEquals("foo/bar.txt", entry.getName());
             assertEquals("a=jakarta.foo.bar", IOUtil.toString(jarInputStream).trim());
             assertNull(jarInputStream.getNextJarEntry());
+        });
+    }
+
+    private void assertOutput(final ResourceTransformer resourceTransformer, final IOConsumer<JarInputStream> onJar) throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (final JarOutputStream jarOutputStream = new JarOutputStream(out)) {
+            resourceTransformer.modifyOutputStream(jarOutputStream);
         }
+        try (final JarInputStream jarInputStream = new JarInputStream(new ByteArrayInputStream(out.toByteArray()))) {
+            onJar.accept(jarInputStream);
+        }
+    }
+
+    private RelocationTransformer createTransformer(final ResourceTransformer delegate, final boolean path) {
+        final RelocationTransformer resourceTransformer = path ?
+                new PathRelocationTransformer() : new RelocationTransformer();
+        resourceTransformer.setDelegates(singletonList(delegate));
+        return resourceTransformer;
+    }
+
+    private interface IOConsumer<A> {
+        void accept(A a) throws IOException;
     }
 }
