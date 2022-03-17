@@ -20,16 +20,21 @@ import org.apache.maven.plugins.shade.relocation.Relocator;
 import java.util.List;
 
 /**
- * Trivial transformer applying relocators using relocate path.
+ * Trivial transformer applying relocators on classes only.
  */
-public class PathRelocationTransformer extends RelocationTransformer {
+public class ClassRelocationTransformer extends RelocationTransformer {
     @Override
     protected String relocate(final String string, final List<Relocator> relocators) {
         String newValue = string;
         for (Relocator relocator : relocators) {
-            if (relocator.canRelocatePath(newValue)) {
-                newValue = relocator.relocatePath(newValue);
+            String value;
+            do {
+                value = newValue;
+                if (relocator.canRelocateClass(value)) {
+                    newValue = relocator.relocateClass(value);
+                }
             }
+            while (!value.equals(newValue));
         }
         return newValue;
     }

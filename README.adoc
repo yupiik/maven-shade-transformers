@@ -29,6 +29,7 @@ This provides two transformer implementations which use slightly different repla
 * `io.yupiik.maven.shade.transformer.RelocationTransformer`: relocates class names
 * `io.yupiik.maven.shade.transformer.SourceRelocationTransformer`: relocates class names in source-like files
 * `io.yupiik.maven.shade.transformer.PathRelocationTransformer`: relocates paths (enabling to use `rawString` relocation configuration and use a plain `replaceAll`)
+* `io.yupiik.maven.shade.transformer.ClassRelocationTransformer`: similar to default one but filter replacements to classes only (safer).
 
 [source,xml]
 ----
