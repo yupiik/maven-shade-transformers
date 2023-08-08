@@ -23,6 +23,7 @@ import org.codehaus.plexus.util.IOUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +35,8 @@ import java.util.jar.JarOutputStream;
 public class RelocationTransformer implements ReproducibleResourceTransformer {
     private Collection<ResourceTransformer> delegates;
     private boolean transformed;
+
+    private Charset charset;
 
     @Override
     public boolean canTransformResource(String resource) {
@@ -56,13 +59,16 @@ public class RelocationTransformer implements ReproducibleResourceTransformer {
     @Override
     public void processResource(final String resource, final InputStream is,
                                 final List<Relocator> relocators, final long time) throws IOException {
+        if (charset == null) {
+            charset = StandardCharsets.UTF_8;
+        }
         byte[] relocated = null;
         for (final ResourceTransformer transformer : delegates) {
             if (transformer.canTransformResource(resource)) {
                 transformed = true;
                 if (relocated == null) {
-                    relocated = relocate(IOUtil.toString(is), relocators)
-                            .getBytes(StandardCharsets.UTF_8);
+                    relocated = relocate(IOUtil.toString(is, charset.name()), relocators)
+                            .getBytes(charset);
                 }
                 if (ReproducibleResourceTransformer.class.isInstance(transformer)) {
                     ReproducibleResourceTransformer.class.cast(transformer).processResource(
@@ -111,5 +117,9 @@ public class RelocationTransformer implements ReproducibleResourceTransformer {
 
     public void setDelegates(final Collection<ResourceTransformer> delegates) {
         this.delegates = delegates;
+    }
+
+    public void setCharset(final Charset charset) {
+        this.charset = charset;
     }
 }
