@@ -188,6 +188,7 @@
             <exclude>**/src/license/**</exclude>
             <exclude>**/generated/**</exclude>
             <exclude>**/*.gitkeep</exclude>
+            <exclude>**/*.github/**</exclude>
           </excludes>
         </configuration>
       </plugin>
