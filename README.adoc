@@ -18,6 +18,23 @@
 
 Extensions to use with Apache Maven Shade.
 
+== Yupiik Fusion
+
+Fusion provides some metadata files which need to be merged when used at runtime.
+This is typically the case for configuration metadata, OpenRPC metadata and JSON schema metadata.
+
+For the first one just register the transformer `FusionDocumentationTransformer`, `FusionOpenRPCTransformer` for the second and for last one use `FusionJsonSchemaTransformer`.
+Both are in `io.yupiik.maven.shade.transformer` package:
+
+[source,xml]
+----
+<transformers>
+  <transformer implementation="io.yupiik.maven.shade.transformer.FusionDocumentationTransformer" />
+  <transformer implementation="io.yupiik.maven.shade.transformer.FusionJsonSchemaTransformer" />
+  <transformer implementation="io.yupiik.maven.shade.transformer.FusionOpenRPCTransformer" />
+</transformers>
+----
+
 == Relocating Wrapper
 
 This transformer aims at wrapping another transformer adding relocation capabilities to it (using relocations of the plugin).

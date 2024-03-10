@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 - Yupiik SAS - https://www.yupiik.com
+ * Copyright (c) 2020 - Yupiik SAS - https://www.yupiik.com
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -18,7 +18,6 @@ package io.yupiik.maven.shade.transformer;
 import org.apache.maven.plugins.shade.relocation.Relocator;
 import org.apache.maven.plugins.shade.resource.ReproducibleResourceTransformer;
 import org.apache.maven.plugins.shade.resource.ResourceTransformer;
-import org.codehaus.plexus.util.IOUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.jar.JarOutputStream;
+
+import static io.yupiik.maven.shade.transformer.IOUtil.slurp;
 
 /**
  * Trivial transformer applying relocators on resources content.
@@ -67,7 +68,7 @@ public class RelocationTransformer implements ReproducibleResourceTransformer {
             if (transformer.canTransformResource(resource)) {
                 transformed = true;
                 if (relocated == null) {
-                    relocated = relocate(IOUtil.toString(is, charset.name()), relocators)
+                    relocated = relocate(slurp(is, charset), relocators)
                             .getBytes(charset);
                 }
                 if (ReproducibleResourceTransformer.class.isInstance(transformer)) {
