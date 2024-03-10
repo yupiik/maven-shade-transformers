@@ -19,7 +19,7 @@
 
   <groupId>io.yupiik.maven</groupId>
   <artifactId>maven-shade-transformers</artifactId>
-  <version>0.0.6-SNAPSHOT</version>
+  <version>0.0.5-SNAPSHOT</version>
   <name>Yupiik Maven Shade Transformers</name>
   <description>Provides utilities to use with Apache Maven Shade plugin.</description>
   <url>https://www.yupiik.com/</url>
